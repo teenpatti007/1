@@ -18,6 +18,7 @@ import sys
 import json
 import time
 import urllib.parse
+import urllib.error
 
 # Make sure resources/lib is importable (Kodi only adds the addon root to path)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "lib"))
@@ -343,7 +344,7 @@ def _fb_patch(code, fb, payload):
 def validate_passcode(code, mac, fb):
     """Validate (and on first use register) a 4-digit passcode.
 
-    Returns one of: "ok", "invalid", "used_elsewhere".
+    Returns one of: "ok", "invalid", "used_elsewhere", "rules_denied", "neterr".
     A code is locked to the first device (MAC) that activates it, so the
     same code cannot be used on a second device.
     """
@@ -351,9 +352,15 @@ def validate_passcode(code, mac, fb):
         return "invalid"
     try:
         obj = _fb_get(code, fb)
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            log("firebase read denied (rules not applied): %s" % e, "error")
+            return "rules_denied"
+        log("passcode check HTTP error: %s" % e, "error")
+        return "neterr"
     except Exception as e:
         log("passcode check error: %s" % e, "error")
-        return "invalid"
+        return "neterr"
     if not isinstance(obj, dict) or obj.get("active", True) is False:
         return "invalid"
     registered = obj.get("mac")
@@ -373,51 +380,64 @@ def ensure_access():
     """Gate the addon behind a 4-digit subscription passcode.
 
     Returns True only if a valid, device-matched passcode is present/entered.
+    Wrapped in try/except so a network/import failure can never crash the
+    addon silently - the user always gets a clear message (and the prompt).
     """
-    fb = get_setting("firebase_url", "").strip().rstrip("/")
-    if not fb:
-        notify("Set your Firebase Database URL in addon settings first.", "MovieHub")
-        if _KODI:
-            try:
-                xbmcaddon.Addon().openSettings()
-            except Exception:
-                pass
-        return False
+    try:
+        fb = get_setting("firebase_url", "").strip().rstrip("/")
+        if not fb:
+            notify("Set your Firebase Database URL in addon settings first.", "MovieHub")
+            if _KODI:
+                try:
+                    xbmcaddon.Addon().openSettings()
+                except Exception:
+                    pass
+            return False
 
-    mac = get_device_mac()
-    stored = get_setting("passcode", "").strip()
-    if stored:
-        res = validate_passcode(stored, mac, fb)
+        mac = get_device_mac()
+        stored = get_setting("passcode", "").strip()
+        if stored:
+            res = validate_passcode(stored, mac, fb)
+            if res == "ok":
+                return True
+            if res == "used_elsewhere":
+                notify("This code is already linked to another device.", "MovieHub")
+                set_setting("passcode", "")
+
+        if _KODI:
+            code = xbmcgui.Dialog().input(
+                "Enter your 4-digit access code",
+                type=xbmcgui.INPUT_NUMERIC,
+                maxlength=4,
+            )
+        else:
+            try:
+                code = input("Enter your 4-digit access code: ").strip()
+            except Exception:
+                code = ""
+        if not code or not code.isdigit() or len(code) != 4:
+            notify("A valid 4-digit code is required to continue.", "MovieHub")
+            return False
+        res = validate_passcode(code, mac, fb)
         if res == "ok":
+            set_setting("passcode", code)
+            notify("Access granted. Enjoy!", "MovieHub")
             return True
         if res == "used_elsewhere":
             notify("This code is already linked to another device.", "MovieHub")
-            set_setting("passcode", "")
-
-    if _KODI:
-        code = xbmcgui.Dialog().input(
-            "Enter your 4-digit access code",
-            type=xbmcgui.INPUT_NUMERIC,
-            maxlength=4,
-        )
-    else:
-        try:
-            code = input("Enter your 4-digit access code: ").strip()
-        except Exception:
-            code = ""
-    if not code or not code.isdigit() or len(code) != 4:
-        notify("A valid 4-digit code is required to continue.", "MovieHub")
+            return False
+        if res == "rules_denied":
+            notify("Firebase read blocked. In Firebase console -> Realtime Database -> Rules, paste database.rules.json and Publish.", "MovieHub")
+            return False
+        if res == "neterr":
+            notify("Cannot reach Firebase. Check your internet connection.", "MovieHub")
+            return False
+        notify("Invalid or expired code. Generate a code in the admin panel first.", "MovieHub")
         return False
-    res = validate_passcode(code, mac, fb)
-    if res == "ok":
-        set_setting("passcode", code)
-        notify("Access granted. Enjoy!", "MovieHub")
-        return True
-    if res == "used_elsewhere":
-        notify("This code is already linked to another device.", "MovieHub")
+    except Exception as e:
+        log("ensure_access crashed: %s" % e, "error")
+        notify("MovieHub error: %s" % e, "MovieHub")
         return False
-    notify("Invalid or expired code.", "MovieHub")
-    return False
 
 
 # ---------------------------------------------------------------------------
@@ -426,33 +446,37 @@ def ensure_access():
 def run():
     if not ensure_access():
         return
-    params = get_params()
-    mode = params.get("mode", "root")
-    handle = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 0
+    try:
+        params = get_params()
+        mode = params.get("mode", "root")
+        handle = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 0
 
-    if mode == "root":
-        list_root(handle)
-    elif mode == "site":
-        list_site_menu(handle, params.get("site", ""))
-    elif mode == "genres":
-        list_genres(handle, params.get("site", ""))
-    elif mode == "search":
-        do_search(handle, params.get("site"))
-    elif mode == "searchall":
-        do_search(handle, None)
-    elif mode == "latest":
-        do_latest(handle, params.get("site", ""))
-    elif mode == "browse":
-        do_browse(handle, params.get("site", ""), params.get("url", ""))
-    elif mode == "movie":
-        list_sources(handle, params.get("site", ""), params.get("url", ""))
-    elif mode == "resolve":
-        play_resolved(handle, params.get("embed", ""), params.get("referer", ""))
-    elif mode == "settings":
-        if _KODI:
-            xbmcaddon.Addon().openSettings()
-    else:
-        list_root(handle)
+        if mode == "root":
+            list_root(handle)
+        elif mode == "site":
+            list_site_menu(handle, params.get("site", ""))
+        elif mode == "genres":
+            list_genres(handle, params.get("site", ""))
+        elif mode == "search":
+            do_search(handle, params.get("site"))
+        elif mode == "searchall":
+            do_search(handle, None)
+        elif mode == "latest":
+            do_latest(handle, params.get("site", ""))
+        elif mode == "browse":
+            do_browse(handle, params.get("site", ""), params.get("url", ""))
+        elif mode == "movie":
+            list_sources(handle, params.get("site", ""), params.get("url", ""))
+        elif mode == "resolve":
+            play_resolved(handle, params.get("embed", ""), params.get("referer", ""))
+        elif mode == "settings":
+            if _KODI:
+                xbmcaddon.Addon().openSettings()
+        else:
+            list_root(handle)
+    except Exception as e:
+        log("run() crashed: %s" % e, "error")
+        notify("MovieHub error: %s" % e, "MovieHub")
 
 
 if __name__ == "__main__":

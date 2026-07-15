@@ -8,5 +8,5 @@ const firebaseConfig = {
   storageBucket: "kodikodi-d214b.firebasestorage.app",
   messagingSenderId: "517921416585",
   appId: "1:517921416585:web:37356dac9fe38fe2742d58",
-  databaseURL: "https://kodikodi-d214b-default-rtdb.firebaseio.com"
+  databaseURL: "https://kodikodi-d214b-default-rtdb.asia-southeast1.firebasedatabase.app"
 };

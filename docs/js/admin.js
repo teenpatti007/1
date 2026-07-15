@@ -2,6 +2,15 @@
 (function () {
   "use strict";
 
+  if (typeof firebase === "undefined" || typeof firebaseConfig === "undefined") {
+    var el = document.getElementById("signinToast");
+    if (el) {
+      el.className = "toast err";
+      el.textContent = "Firebase failed to load. Open this page over the internet (it needs the Firebase CDN).";
+    }
+    return;
+  }
+
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
   var db = firebase.database();
