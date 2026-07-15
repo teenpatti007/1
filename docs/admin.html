@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MovieHub — Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="site">
+      <div class="brand">Movie<span class="dot">Hub</span> <span class="muted small">Admin</span></div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <!-- Sign in -->
+    <section id="signin" class="panel">
+      <h2>Admin Sign In</h2>
+      <p class="muted">Use the email & password you created in the Firebase console. No public sign-up.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="admin@example.com" autocomplete="username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="signinBtn">Sign In</button>
+      </div>
+      <div id="signinToast"></div>
+    </section>
+
+    <!-- Admin panel -->
+    <section id="admin" class="hidden">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0">Passcodes</h2>
+          <div class="row">
+            <button class="btn" id="genBtn">Generate 4-digit code</button>
+            <button class="btn secondary" id="refreshBtn">Refresh</button>
+            <button class="btn secondary" id="signoutBtn">Sign Out</button>
+          </div>
+        </div>
+        <div id="adminToast"></div>
+        <p class="muted small">Each code is locked to the first device (MAC) that activates it in Kodi.
+           Revoking deactivates a code; the same number can be regenerated afterwards.</p>
+        <table>
+          <thead>
+            <tr><th>Code</th><th>Status</th><th>Device (MAC)</th><th>Activated</th><th></th></tr>
+          </thead>
+          <tbody id="codeRows">
+            <tr><td colspan="5" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      MovieHub admin — Firebase Realtime Database.
+    </footer>
+  </div>
+
+  <!-- Firebase compat SDK (CDN, no build step required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

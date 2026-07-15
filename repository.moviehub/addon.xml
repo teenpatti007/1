@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.moviehub"
+       name="MovieHub Repository"
+       version="1.0.0"
+       provider-name="MovieHub">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.addon.repository"
+            name="MovieHub Repository">
+    <info compressed="false">https://teenpatti007.github.io/MovieHub/addons.xml</info>
+    <checksum>https://teenpatti007.github.io/MovieHub/addons.xml.md5</checksum>
+    <datadir zip="true">https://teenpatti007.github.io/MovieHub</datadir>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">MovieHub addon repository</summary>
+    <description lang="en">Auto-update repository for the MovieHub Kodi addon.</description>
+    <language>en</language>
+    <platform>all</platform>
+  </extension>
+</addon>

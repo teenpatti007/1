@@ -1,0 +1,74 @@
+# -*- coding: utf-8 -*-
+"""Build the MovieHub Kodi addon zip and the GitHub Pages / Kodi-repo files."""
+import os, zipfile, shutil, hashlib
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+ADDON = os.path.join(ROOT, "plugin.video.moviehub")
+ZIP = os.path.join(ROOT, "plugin.video.moviehub.zip")
+DOCS = os.path.join(ROOT, "docs")
+DOCS_ZIP = os.path.join(DOCS, "plugin.video.moviehub.zip")
+
+EXCLUDE_DIRS = {"__pycache__", "tests"}
+EXCLUDE_EXT = {".pyc", ".pyo"}
+
+
+def zip_addon():
+    if os.path.exists(ZIP):
+        os.remove(ZIP)
+    with zipfile.ZipFile(ZIP, "w", zipfile.ZIP_DEFLATED) as z:
+        for dp, dns, fns in os.walk(ADDON):
+            dns[:] = [d for d in dns if d not in EXCLUDE_DIRS]
+            for fn in fns:
+                if os.path.splitext(fn)[1] in EXCLUDE_EXT:
+                    continue
+                full = os.path.join(dp, fn)
+                rel = os.path.relpath(full, ROOT)
+                z.write(full, rel)
+    print("addon zip:", ZIP)
+
+
+def make_addons_xml():
+    with open(os.path.join(ADDON, "addon.xml"), encoding="utf-8") as f:
+        content = f.read()
+    # strip the xml declaration line
+    lines = [l for l in content.splitlines() if not l.strip().startswith("<?xml")]
+    body = "\n".join(lines).strip()
+    addons = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + body + "\n</addons>\n"
+    out = os.path.join(DOCS, "addons.xml")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(addons)
+    md5 = hashlib.md5(addons.encode("utf-8")).hexdigest()
+    with open(os.path.join(DOCS, "addons.xml.md5"), "w") as f:
+        f.write(md5)
+    print("addons.xml + md5 written")
+
+
+def zip_repo():
+    repo_src = os.path.join(ROOT, "repository.moviehub")
+    repo_zip = os.path.join(DOCS, "repository.moviehub.zip")
+    if os.path.exists(repo_zip):
+        os.remove(repo_zip)
+    with zipfile.ZipFile(repo_zip, "w", zipfile.ZIP_DEFLATED) as z:
+        for dp, dns, fns in os.walk(repo_src):
+            for fn in fns:
+                full = os.path.join(dp, fn)
+                rel = os.path.relpath(full, ROOT)
+                z.write(full, rel)
+    print("repository zip ->", repo_zip)
+
+
+def main():
+    zip_addon()
+    shutil.copyfile(ZIP, DOCS_ZIP)
+    print("copied zip -> docs/")
+    make_addons_xml()
+    zip_repo()
+    with zipfile.ZipFile(ZIP) as z:
+        names = z.namelist()
+    assert names[0].startswith("plugin.video.moviehub/"), "bad top folder"
+    assert "plugin.video.moviehub/addon.xml" in names
+    print("OK: valid addon zip with %d entries" % len(names))
+
+
+if __name__ == "__main__":
+    main()

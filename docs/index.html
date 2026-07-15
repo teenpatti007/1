@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MovieHub — Free Movies for Kodi</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="site">
+      <div class="brand">Movie<span class="dot">Hub</span></div>
+      <nav>
+        <a href="#install">Install</a>
+        <a href="admin.html">Admin</a>
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Watch <span class="accent">Free Movies</span> on Kodi</h1>
+      <p>MovieHub is a Kodi video addon with a curated movie & web-series catalogue.
+         Access is protected by a 4-digit subscription passcode that is locked to a single device.</p>
+      <a class="btn" href="#install">Get Started</a>
+      <a class="btn secondary" href="admin.html">Admin Panel</a>
+    </section>
+
+    <section>
+      <div class="cards">
+        <div class="card">
+          <h3>🔍 Browse & Search</h3>
+          <p>Search, Latest, Genres and Categories — all from your couch.</p>
+        </div>
+        <div class="card">
+          <h3>▶ One-Click Play</h3>
+          <p>Resolves streams directly inside Kodi with inputstream.adaptive (HLS).</p>
+        </div>
+        <div class="card">
+          <h3>🔐 Subscription Codes</h3>
+          <p>4-digit passcodes issued from the admin panel, each locked to one device.</p>
+        </div>
+        <div class="card">
+          <h3>📺 Any Device</h3>
+          <p>Windows, Linux, macOS, Android, LibreELEC, OSMC — anywhere Kodi runs.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install on Kodi</h2>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><div class="body">
+          Download the addon zip from the
+          <a href="plugin.video.moviehub.zip">releases page</a> (or the link your provider gave you).
+        </div></div>
+        <div class="step"><div class="num">2</div><div class="body">
+          In Kodi go to <span class="mono">Settings → Add-ons → Install from zip file</span>
+          and select the downloaded <span class="mono">plugin.video.moviehub.zip</span>.
+        </div></div>
+        <div class="step"><div class="num">3</div><div class="body">
+          Open <b>MovieHub</b> from your Add-ons. When prompted, enter the
+          <b>4-digit access code</b> you were given. The code is linked to this device only.
+        </div></div>
+        <div class="step"><div class="num">4</div><div class="body">
+          (Optional) Enable auto-updates by installing the
+          <a href="repository.moviehub.zip">MovieHub Repository</a> first, then MovieHub from it.
+        </div></div>
+      </div>
+      <p class="muted small">Tip: If you ever reinstall Kodi on the <i>same</i> device your code keeps working.
+         Using the same code on a different device will be rejected.</p>
+    </section>
+
+    <footer>
+      MovieHub is an independent project. Streaming copyrighted content may be illegal in your country — use at your own risk.
+    </footer>
+  </div>
+</body>
+</html>

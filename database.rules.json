@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "passcodes": {
+      ".read": true,
+      "$code": {
+        ".write": "auth != null || (data.exists() && data.child('active').val() == true && newData.child('active').val() == true && (!data.hasChild('mac') || data.child('mac').val() == newData.child('mac').val()))"
+      }
+    }
+  }
+}
