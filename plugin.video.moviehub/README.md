@@ -15,7 +15,7 @@ Kodi's "Add source" needs a browsable web address, so use **GitHub Pages**.
 2. Kodi → **Settings (gear) → File manager → Add source → `<None>`**.
 3. Enter:
    ```
-   https://teenpatti007.github.io/1/MovieHub/docs/
+   https://teenpatti007.github.io/1/MovieHub/docs/repo/
    ```
 4. Name it `MovieHub Repo`, then **OK**.
 5. **Settings → Add-ons → Install from zip file → MovieHub Repo** → install

@@ -32,7 +32,7 @@ which lists the install files.
 1. **Settings (gear) → File manager → Add source → `<None>`**.
 2. Enter exactly:
    ```
-   https://teenpatti007.github.io/1/MovieHub/docs/
+   https://teenpatti007.github.io/1/MovieHub/docs/repo/
    ```
 3. Name it `MovieHub Repo`, **OK**.
 4. **Settings → Add-ons → Install from zip file → MovieHub Repo** →
@@ -106,7 +106,7 @@ Open **MovieHub → (long-press / context menu) → Settings**, or the in-addon
 
 - **"Cannot connect to server" / "Could not connect"** — this happens when the
   Kodi source points at a direct file (raw) URL or GitHub Pages is not enabled.
-  Use the GitHub Pages directory URL `https://teenpatti007.github.io/1/MovieHub/docs/`
+  Use the GitHub Pages directory URL `https://teenpatti007.github.io/1/MovieHub/docs/repo/`
   and make sure GitHub Pages is turned on and `MovieHub/docs/` is pushed.
 - **"Cannot install / invalid structure"** — make sure you are installing
   `plugin.video.moviehub.zip` (or the repository zip), not the whole project

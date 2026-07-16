@@ -64,6 +64,41 @@ def zip_repo():
     print("repository zip ->", repo_zip)
 
 
+def stage_repo_page():
+    # A browsable "repo" page (served via GitHub Pages) that Kodi's file
+    # manager can parse for zip links, so users can add it as a Kodi source
+    # and install from zip file (like other GitHub-Pages-hosted Kodi repos).
+    repo_dir = os.path.join(DOCS, "repo")
+    os.makedirs(repo_dir, exist_ok=True)
+    for name in ("repository.moviehub.zip", "plugin.video.moviehub.zip",
+                 "addons.xml", "addons.xml.md5"):
+        src = os.path.join(DOCS, name)
+        if os.path.exists(src):
+            shutil.copyfile(src, os.path.join(repo_dir, name))
+    html = (
+        '<!DOCTYPE html>\n'
+        '<html lang="en">\n'
+        '<head>\n'
+        '  <meta charset="UTF-8" />\n'
+        '  <title>MovieHub Kodi Repository</title>\n'
+        '</head>\n'
+        '<body>\n'
+        '  <h1>MovieHub Kodi Repository</h1>\n'
+        '  <p>Install in Kodi: Settings -> Add-ons -> Install from zip file -> this source.</p>\n'
+        '  <ul>\n'
+        '    <li><a href="repository.moviehub.zip">repository.moviehub.zip</a> (install this first)</li>\n'
+        '    <li><a href="plugin.video.moviehub.zip">plugin.video.moviehub.zip</a> (the addon)</li>\n'
+        '    <li><a href="addons.xml">addons.xml</a></li>\n'
+        '    <li><a href="addons.xml.md5">addons.xml.md5</a></li>\n'
+        '  </ul>\n'
+        '</body>\n'
+        '</html>\n'
+    )
+    with open(os.path.join(repo_dir, "index.html"), "w", encoding="utf-8") as f:
+        f.write(html)
+    print("staged repo page ->", os.path.join(repo_dir, "index.html"))
+
+
 def stage_repo_zips():
     # Kodi repositories expect each addon zip at:
     #   <datadir>/<addonid>/<addonid>-<version>.zip
@@ -85,6 +120,7 @@ def main():
     make_addons_xml()
     stage_repo_zips()
     zip_repo()
+    stage_repo_page()
     with zipfile.ZipFile(ZIP) as z:
         names = z.namelist()
     assert names[0].startswith("plugin.video.moviehub/"), "bad top folder"
