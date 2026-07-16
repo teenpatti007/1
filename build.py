@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Build the MovieHub Kodi addon zip and the GitHub Pages / Kodi-repo files."""
-import os, zipfile, shutil, hashlib
+import os, zipfile, shutil, hashlib, re
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 ADDON = os.path.join(ROOT, "plugin.video.moviehub")
@@ -64,11 +64,26 @@ def zip_repo():
     print("repository zip ->", repo_zip)
 
 
+def stage_repo_zips():
+    # Kodi repositories expect each addon zip at:
+    #   <datadir>/<addonid>/<addonid>-<version>.zip
+    with open(os.path.join(ADDON, "addon.xml"), encoding="utf-8") as f:
+        content = f.read()
+    m = re.search(r'<addon id="plugin\.video\.moviehub"[^>]*?version="([^"]+)"', content, re.S)
+    ver = m.group(1) if m else "1.0.0"
+    addon_dir = os.path.join(DOCS, "plugin.video.moviehub")
+    os.makedirs(addon_dir, exist_ok=True)
+    versioned = os.path.join(addon_dir, "plugin.video.moviehub-%s.zip" % ver)
+    shutil.copyfile(ZIP, versioned)
+    print("staged repo zip ->", versioned)
+
+
 def main():
     zip_addon()
     shutil.copyfile(ZIP, DOCS_ZIP)
     print("copied zip -> docs/")
     make_addons_xml()
+    stage_repo_zips()
     zip_repo()
     with zipfile.ZipFile(ZIP) as z:
         names = z.namelist()

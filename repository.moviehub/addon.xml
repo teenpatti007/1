@@ -7,10 +7,10 @@
     <import addon="xbmc.python" version="3.0.0"/>
   </requires>
   <extension point="xbmc.addon.repository"
-            name="MovieHub Repository">
-    <info compressed="false">https://teenpatti007.github.io/MovieHub/addons.xml</info>
-    <checksum>https://teenpatti007.github.io/MovieHub/addons.xml.md5</checksum>
-    <datadir zip="true">https://teenpatti007.github.io/MovieHub</datadir>
+             name="MovieHub Repository">
+    <info compressed="false">https://raw.githubusercontent.com/teenpatti007/1/main/MovieHub/docs/addons.xml</info>
+    <checksum>https://raw.githubusercontent.com/teenpatti007/1/main/MovieHub/docs/addons.xml.md5</checksum>
+    <datadir zip="true">https://raw.githubusercontent.com/teenpatti007/1/main/MovieHub/docs</datadir>
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en">MovieHub addon repository</summary>
