@@ -8,19 +8,23 @@ on only one Kodi installation.
 ## Install
 
 **Via repository (recommended, auto-updates):**
-1. Kodi → **Settings (gear) → File manager → Add source → `<None>`**.
-2. Enter:
+Kodi's "Add source" needs a browsable web address, so use **GitHub Pages**.
+
+1. On GitHub, repo `teenpatti007/1` → **Settings → Pages** → Deploy from a
+   branch → **main** → **/ (root)** → Save.
+2. Kodi → **Settings (gear) → File manager → Add source → `<None>`**.
+3. Enter:
    ```
-   https://raw.githubusercontent.com/teenpatti007/1/main/MovieHub/docs/repository.moviehub.zip
+   https://teenpatti007.github.io/1/MovieHub/docs/
    ```
-3. Name it `MovieHub Repo`, then **OK**.
-4. **Settings → Add-ons → Install from zip file → MovieHub Repo** → install
+4. Name it `MovieHub Repo`, then **OK**.
+5. **Settings → Add-ons → Install from zip file → MovieHub Repo** → install
    `repository.moviehub.zip`.
-5. **Settings → Add-ons → Install from repository → MovieHub Repository →
+6. **Settings → Add-ons → Install from repository → MovieHub Repository →
    Video add-ons → MovieHub → Install**.
 
 **Via ZIP (no auto-update):**
-1. Download `plugin.video.moviehub.zip`.
+1. Download `plugin.video.moviehub.zip` onto the Kodi device.
 2. **Settings → Add-ons → Install from zip file** → select the zip.
 3. MovieHub appears under **Video → MovieHub**.
 
@@ -52,6 +56,9 @@ Open **MovieHub → (long-press / context menu) → Settings**.
 
 ## Troubleshooting
 
+- **"Cannot connect to server"** — make sure GitHub Pages is enabled and the
+  Kodi source is the directory URL `https://teenpatti007.github.io/1/MovieHub/docs/`
+  (not a raw file link).
 - **HLS won't play** — ensure `inputstream.adaptive` is installed/enabled and
   *Use InputStream Adaptive* is On.
 - **No sources / "unresolved"** — the source site may be down or blocked by
