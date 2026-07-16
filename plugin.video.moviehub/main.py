@@ -123,7 +123,7 @@ def list_genres(handle, site_id):
         xbmcplugin.endOfDirectory(handle)
 
 
-def list_movies(handle, movies, site_id):
+def list_movies(handle, movies, site_id, end=True):
     xbmcplugin.setContent(handle, "movies")
     for m in movies:
         info = {"title": m["title"]}
@@ -131,7 +131,7 @@ def list_movies(handle, movies, site_id):
             info["year"] = int(m["year"]) if str(m["year"]).isdigit() else None
         add_dir(handle, m["title"], {"mode": "movie", "site": site_id, "url": m["url"]},
                 thumb=m.get("thumb", ""), info=info)
-    if _KODI:
+    if _KODI and end:
         xbmcplugin.endOfDirectory(handle)
 
 
@@ -163,32 +163,42 @@ def do_search(handle, site_id=None):
     list_movies(handle, all_movies, site_id or "")
 
 
-def do_latest(handle, site_id):
+def do_latest(handle, site_id, page=1):
     site = get_site(site_id)
     if not site:
         return
     try:
-        movies = site.latest()
+        movies = site.latest(page)
     except Exception as e:
         log("latest failed: %s" % e, "error")
         movies = []
     if not movies:
         notify("No items found")
-    list_movies(handle, movies, site_id)
+    list_movies(handle, movies, site_id, end=False)
+    if movies:
+        add_dir(handle, "[COLOR gold]>> Next Page (%d)[/COLOR]" % (page + 1),
+                {"mode": "latest", "site": site_id, "page": page + 1})
+    if _KODI:
+        xbmcplugin.endOfDirectory(handle)
 
 
-def do_browse(handle, site_id, url):
+def do_browse(handle, site_id, url, page=1):
     site = get_site(site_id)
     if not site:
         return
     try:
-        movies = site.browse(url)
+        movies = site.browse(url, page)
     except Exception as e:
         log("browse failed: %s" % e, "error")
         movies = []
     if not movies:
         notify("No items found")
-    list_movies(handle, movies, site_id)
+    list_movies(handle, movies, site_id, end=False)
+    if movies:
+        add_dir(handle, "[COLOR gold]>> Next Page (%d)[/COLOR]" % (page + 1),
+                {"mode": "browse", "site": site_id, "url": url, "page": page + 1})
+    if _KODI:
+        xbmcplugin.endOfDirectory(handle)
 
 
 # ---------------------------------------------------------------------------
@@ -408,7 +418,6 @@ def ensure_access():
             code = xbmcgui.Dialog().input(
                 "Enter your 4-digit access code",
                 type=xbmcgui.INPUT_NUMERIC,
-                maxlength=4,
             )
         else:
             try:
@@ -462,9 +471,9 @@ def run():
         elif mode == "searchall":
             do_search(handle, None)
         elif mode == "latest":
-            do_latest(handle, params.get("site", ""))
+            do_latest(handle, params.get("site", ""), int(params.get("page", 1) or 1))
         elif mode == "browse":
-            do_browse(handle, params.get("site", ""), params.get("url", ""))
+            do_browse(handle, params.get("site", ""), params.get("url", ""), int(params.get("page", 1) or 1))
         elif mode == "movie":
             list_sources(handle, params.get("site", ""), params.get("url", ""))
         elif mode == "resolve":

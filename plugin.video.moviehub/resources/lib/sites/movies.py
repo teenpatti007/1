@@ -59,6 +59,15 @@ class Movies(SiteScraper):
         return movies
 
     # ------------------------------------------------------------------
+    def _page_url(self, url, page):
+        """Build a paginated URL. Page 1 == the base url; page N == /page/N/."""
+        if not page or page <= 1:
+            return url
+        base = re.sub(r"/page/\d+/?", "", url)
+        if not base.endswith("/"):
+            base += "/"
+        return "%spage/%d/" % (base, page)
+
     def search(self, query, page=1):
         q = query.lower()
         out = []
@@ -68,8 +77,9 @@ class Movies(SiteScraper):
         return out[:50]
 
     def latest(self, page=1):
+        url = self._page_url(self.latest_url, page)
         try:
-            html = self._get(self.latest_url)
+            html = self._get(url)
         except Exception as e:
             log("latest error: %s" % e, "error")
             return []
@@ -87,6 +97,7 @@ class Movies(SiteScraper):
         ]
 
     def browse(self, url, page=1):
+        url = self._page_url(url, page)
         try:
             html = self._get(url)
         except Exception as e:

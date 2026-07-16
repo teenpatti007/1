@@ -15,14 +15,21 @@ EXCLUDE_EXT = {".pyc", ".pyo"}
 def zip_addon():
     if os.path.exists(ZIP):
         os.remove(ZIP)
+    seen_dirs = set()
     with zipfile.ZipFile(ZIP, "w", zipfile.ZIP_DEFLATED) as z:
         for dp, dns, fns in os.walk(ADDON):
             dns[:] = [d for d in dns if d not in EXCLUDE_DIRS]
+            rel_dir = os.path.relpath(dp, ROOT).replace("\\", "/")
+            if rel_dir != ".":
+                dir_entry = rel_dir + "/"
+                if dir_entry not in seen_dirs:
+                    seen_dirs.add(dir_entry)
+                    z.writestr(dir_entry, "")
             for fn in fns:
                 if os.path.splitext(fn)[1] in EXCLUDE_EXT:
                     continue
                 full = os.path.join(dp, fn)
-                rel = os.path.relpath(full, ROOT)
+                rel = os.path.relpath(full, ROOT).replace("\\", "/")
                 z.write(full, rel)
     print("addon zip:", ZIP)
 
