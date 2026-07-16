@@ -24,15 +24,15 @@ which lists the install files.
 
 ### One-time: enable GitHub Pages
 1. On GitHub, open the `teenpatti007/1` repo → **Settings → Pages**.
-2. **Source:** Deploy from a branch → **Branch: main** → **Folder: / (root)** → Save.
+2. **Source:** Deploy from a branch → **Branch: main** → **Folder: /docs** → Save.
 3. Wait about a minute. Your site address becomes `https://teenpatti007.github.io/1/`
-   and the install files are served from `…/1/MovieHub/docs/`.
+   and the install files (index.html, zips) are served from that address.
 
 ### In Kodi
 1. **Settings (gear) → File manager → Add source → `<None>`**.
 2. Enter exactly:
    ```
-   https://teenpatti007.github.io/1/MovieHub/docs/repo/
+   https://teenpatti007.github.io/1/
    ```
 3. Name it `MovieHub Repo`, **OK**.
 4. **Settings → Add-ons → Install from zip file → MovieHub Repo** →
@@ -106,7 +106,7 @@ Open **MovieHub → (long-press / context menu) → Settings**, or the in-addon
 
 - **"Cannot connect to server" / "Could not connect"** — this happens when the
   Kodi source points at a direct file (raw) URL or GitHub Pages is not enabled.
-  Use the GitHub Pages directory URL `https://teenpatti007.github.io/1/MovieHub/docs/repo/`
+  Use the site root URL `https://teenpatti007.github.io/1/` (GitHub Pages source must be set to /docs)
   and make sure GitHub Pages is turned on and `MovieHub/docs/` is pushed.
 - **"Cannot install / invalid structure"** — make sure you are installing
   `plugin.video.moviehub.zip` (or the repository zip), not the whole project

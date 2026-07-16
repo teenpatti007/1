@@ -11,11 +11,11 @@ on only one Kodi installation.
 Kodi's "Add source" needs a browsable web address, so use **GitHub Pages**.
 
 1. On GitHub, repo `teenpatti007/1` → **Settings → Pages** → Deploy from a
-   branch → **main** → **/ (root)** → Save.
+   branch → **main** → **/docs** → Save.
 2. Kodi → **Settings (gear) → File manager → Add source → `<None>`**.
 3. Enter:
    ```
-   https://teenpatti007.github.io/1/MovieHub/docs/repo/
+   https://teenpatti007.github.io/1/
    ```
 4. Name it `MovieHub Repo`, then **OK**.
 5. **Settings → Add-ons → Install from zip file → MovieHub Repo** → install
@@ -57,7 +57,7 @@ Open **MovieHub → (long-press / context menu) → Settings**.
 ## Troubleshooting
 
 - **"Cannot connect to server"** — make sure GitHub Pages is enabled and the
-  Kodi source is the directory URL `https://teenpatti007.github.io/1/MovieHub/docs/`
+  Kodi source is the site root URL `https://teenpatti007.github.io/1/` (GitHub Pages source must be set to /docs)
   (not a raw file link).
 - **HLS won't play** — ensure `inputstream.adaptive` is installed/enabled and
   *Use InputStream Adaptive* is On.
