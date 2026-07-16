@@ -95,6 +95,50 @@ def set_setting(key, value):
 
 
 # ---------------------------------------------------------------------------
+# Device identity (stable per-install id, not hardware MAC)
+# ---------------------------------------------------------------------------
+def get_device_id():
+    """Return a stable, randomly generated device identity (100 chars).
+
+    Unlike a hardware MAC (which can "hop" on mobile Kodi builds, breaking
+    device-locking), this id is generated once and persisted in the addon's
+    data directory, so a code stays locked to the same Kodi installation
+    across launches. Clearing the addon's data creates a new device.
+    """
+    import os
+    if _KODI:
+        try:
+            base = xbmc.translatePath("special://profile/addon_data/%s/" % ADDON_ID)
+        except Exception:
+            base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "device_data")
+    else:
+        base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".moviehub_data")
+    path = os.path.join(base, "device_id.txt")
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                val = f.read().strip()
+            if val:
+                return val
+    except Exception:
+        pass
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{};:,.<>?"
+    try:
+        import secrets
+        rid = "".join(secrets.choice(alphabet) for _ in range(100))
+    except Exception:
+        import random
+        rid = "".join(random.choice(alphabet) for _ in range(100))
+    try:
+        os.makedirs(base, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(rid)
+    except Exception:
+        pass
+    return rid
+
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 def log(msg, level="info"):

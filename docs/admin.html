@@ -45,23 +45,25 @@
     <!-- Admin panel -->
     <section id="admin" class="hidden">
       <div class="panel">
-        <div class="row" style="justify-content:space-between">
+        <div class="row" style="justify-content:space-between; flex-wrap:wrap; gap:10px">
           <h2 style="margin:0">Passcodes</h2>
           <div class="row">
+            <input type="date" id="expiry" title="Optional expiry date (subscription auto-expires at end of this day)" />
             <button class="btn" id="genBtn">Generate 4-digit code</button>
             <button class="btn secondary" id="refreshBtn">Refresh</button>
             <button class="btn secondary" id="signoutBtn">Sign Out</button>
           </div>
         </div>
         <div id="adminToast"></div>
-        <p class="muted small">Each code is locked to the first device (MAC) that activates it in Kodi.
-           Revoking deactivates a code; the same number can be regenerated afterwards.</p>
+        <p class="muted small">Each code is locked to the first device that activates it in Kodi.
+           Set an optional <b>expiry</b> date to auto-expire a subscription, or use <b>Pause</b> to
+           suspend it manually. Revoking deactivates a code; the same number can be regenerated afterwards.</p>
         <table>
           <thead>
-            <tr><th>Code</th><th>Status</th><th>Device (MAC)</th><th>Activated</th><th></th></tr>
+            <tr><th>Code</th><th>Status</th><th>Device</th><th>Activated</th><th>Expiry</th><th></th></tr>
           </thead>
           <tbody id="codeRows">
-            <tr><td colspan="5" class="muted">Loading…</td></tr>
+            <tr><td colspan="6" class="muted">Loading…</td></tr>
           </tbody>
         </table>
       </div>

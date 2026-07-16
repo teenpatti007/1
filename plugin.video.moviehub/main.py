@@ -33,11 +33,16 @@ except ImportError:
     xbmc = xbmcgui = xbmcplugin = xbmcaddon = None
     _KODI = False
 
-from common import log, notify, get_setting, set_setting, Progress, Net
+from common import log, notify, get_setting, set_setting, Progress, Net, get_device_id
 from scraper import get_enabled_sites, get_site
 from resolver import resolve
 
 ADDON_ID = "plugin.video.moviehub"
+
+# Module-level access token. Set by ensure_access() after a valid code is
+# verified. Source-listing and playback require it, so simply deleting the
+# passcode prompt cannot unlock the addon (playback stays blocked).
+_ACCESS = None
 
 
 # ---------------------------------------------------------------------------
@@ -208,6 +213,11 @@ def list_sources(handle, site_id, movie_url):
     site = get_site(site_id)
     if not site:
         return
+    if not _ACCESS:
+        notify("Access required. Enter your 4-digit code.", "MovieHub")
+        if _KODI:
+            xbmcplugin.endOfDirectory(handle)
+        return
     xbmcplugin.setContent(handle, "videos")
     try:
         sources = site.get_sources(movie_url)
@@ -273,6 +283,11 @@ def _open_external(url):
 
 
 def play_resolved(handle, embed_url, referer=""):
+    if not _ACCESS:
+        notify("Access required. Enter your 4-digit code.", "MovieHub")
+        if _KODI:
+            xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+        return
     preferred = get_setting("prefer_quality", "Auto")
     try:
         result = resolve(embed_url, preferred=preferred, referer=referer)
@@ -327,13 +342,8 @@ def play_resolved(handle, embed_url, referer=""):
 # Subscription passcode (Firebase-backed, device-locked)
 # ---------------------------------------------------------------------------
 def get_device_mac():
-    """Return a stable device identifier (MAC address)."""
-    try:
-        import uuid
-        node = uuid.getnode()
-        return ":".join(("%012X" % node)[i:i + 2] for i in range(0, 12, 2))
-    except Exception:
-        return "unknown"
+    """Deprecated: mobile Kodi reports a hopping MAC. Use get_device_id()."""
+    return get_device_id()
 
 
 def _fb_get(code, fb):
@@ -351,12 +361,13 @@ def _fb_patch(code, fb, payload):
                 headers={"Content-Type": "application/json"})
 
 
-def validate_passcode(code, mac, fb):
+def validate_passcode(code, device, fb):
     """Validate (and on first use register) a 4-digit passcode.
 
-    Returns one of: "ok", "invalid", "used_elsewhere", "rules_denied", "neterr".
-    A code is locked to the first device (MAC) that activates it, so the
-    same code cannot be used on a second device.
+    Returns one of: "ok", "invalid", "used_elsewhere", "paused", "expired",
+    "rules_denied", "neterr".
+    A code is locked to the first device id that activates it, so the same
+    code cannot be used on a second device.
     """
     if not code or not fb:
         return "invalid"
@@ -373,13 +384,18 @@ def validate_passcode(code, mac, fb):
         return "neterr"
     if not isinstance(obj, dict) or obj.get("active", True) is False:
         return "invalid"
-    registered = obj.get("mac")
-    if registered and registered != mac:
+    if obj.get("paused"):
+        return "paused"
+    exp = obj.get("expiry")
+    if exp and isinstance(exp, (int, float)) and int(time.time() * 1000) > int(exp):
+        return "expired"
+    registered = obj.get("device") or obj.get("mac")
+    if registered and registered != device:
         return "used_elsewhere"
     if not registered:
-        # first activation on this device -> lock the code to this MAC
+        # first activation on this device -> lock the code to this device id
         try:
-            _fb_patch(code, fb, {"mac": mac, "activated": int(time.time())})
+            _fb_patch(code, fb, {"device": device, "activated": int(time.time())})
         except Exception as e:
             log("passcode register error: %s" % e, "error")
             return "invalid"
@@ -389,10 +405,13 @@ def validate_passcode(code, mac, fb):
 def ensure_access():
     """Gate the addon behind a 4-digit subscription passcode.
 
-    Returns True only if a valid, device-matched passcode is present/entered.
+    On success sets the module-level _ACCESS token; the playback/source
+    functions require it, so simply deleting this dialog cannot unlock
+    playback (the addon refuses to list/play sources without a valid code).
     Wrapped in try/except so a network/import failure can never crash the
     addon silently - the user always gets a clear message (and the prompt).
     """
+    global _ACCESS
     try:
         fb = get_setting("firebase_url", "").strip().rstrip("/")
         if not fb:
@@ -404,14 +423,21 @@ def ensure_access():
                     pass
             return False
 
-        mac = get_device_mac()
+        dev = get_device_id()
         stored = get_setting("passcode", "").strip()
         if stored:
-            res = validate_passcode(stored, mac, fb)
+            res = validate_passcode(stored, dev, fb)
             if res == "ok":
+                _ACCESS = dev
                 return True
             if res == "used_elsewhere":
                 notify("This code is already linked to another device.", "MovieHub")
+                set_setting("passcode", "")
+            elif res == "paused":
+                notify("This subscription is paused. Contact your provider.", "MovieHub")
+                set_setting("passcode", "")
+            elif res == "expired":
+                notify("This subscription has expired. Contact your provider.", "MovieHub")
                 set_setting("passcode", "")
 
         if _KODI:
@@ -427,13 +453,20 @@ def ensure_access():
         if not code or not code.isdigit() or len(code) != 4:
             notify("A valid 4-digit code is required to continue.", "MovieHub")
             return False
-        res = validate_passcode(code, mac, fb)
+        res = validate_passcode(code, dev, fb)
         if res == "ok":
             set_setting("passcode", code)
+            _ACCESS = dev
             notify("Access granted. Enjoy!", "MovieHub")
             return True
         if res == "used_elsewhere":
             notify("This code is already linked to another device.", "MovieHub")
+            return False
+        if res == "paused":
+            notify("This subscription is paused. Contact your provider.", "MovieHub")
+            return False
+        if res == "expired":
+            notify("This subscription has expired. Contact your provider.", "MovieHub")
             return False
         if res == "rules_denied":
             notify("Firebase read blocked. In Firebase console -> Realtime Database -> Rules, paste database.rules.json and Publish.", "MovieHub")

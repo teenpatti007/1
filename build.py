@@ -8,7 +8,7 @@ ZIP = os.path.join(ROOT, "plugin.video.moviehub.zip")
 DOCS = os.path.join(ROOT, "docs")
 DOCS_ZIP = os.path.join(DOCS, "plugin.video.moviehub.zip")
 
-EXCLUDE_DIRS = {"__pycache__", "tests"}
+EXCLUDE_DIRS = {"__pycache__", "tests", ".moviehub_data", "device_data"}
 EXCLUDE_EXT = {".pyc", ".pyo"}
 
 
